@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects</title>
+    <style>
+        body {
+            --gap: 10px;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: oldlace;
+            font-family: Arial;
+            font-size: calc(16px + (20 - 16) * ((100vw - 320px) / (1440 - 320)));
+        }
+
+        project-plan1 {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            height: 100%;
+            width: 100%;
+            gap: var(--gap);
+            padding: var(--gap);
+            box-sizing: border-box;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        project-plan {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--gap);
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--gap);
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        project-img {
+            flex-basis: 18%;
+            box-sizing: border-box;
+            overflow: hidden;
+            position: relative;
+            border-radius: calc(2 * var(--gap));
+            height: 45vh;
+        }
+
+        @media (max-width: 1200px) {
+            project-img {
+                flex-basis: 24%;
+            }
+        }
+
+        @media (max-width: 1000px) {
+            project-img {
+                flex-basis: 32%;
+            }
+        }
+
+        @media (max-width: 800px) {
+            project-img {
+                flex-basis: 48%;
+            }
+        }
+
+        img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        project-img div {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            min-height: 2.5em;
+            padding-top: .1em;
+            background: green;
+            color: white;
+            opacity: 1;
+            box-sizing: content-box;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <project-plan>
+    </project-plan>
+    <script>
+        let urlParamater = name => new URLSearchParams(window.location.search).get(name);
+        let createElement = (tag, ...props) => Object.assign(document.createElement(tag), ...props);
+        customElements.define('project-plan', class extends HTMLElement {
+            connectedCallback() {
+                let language = {
+                    en: [
+                        'the client described',
+                        'the Business Consultant heard',
+                        'the Business Analysist designed',
+                        'the Programmer programmed',
+                        'the Project Manager communicated',
+                        'the Testers documented',
+                        'Operations installed',
+                        'the Customer was billed',
+                        'the Helpdesk supports',
+                        'the Customer really needed'],
+                    nl: [
+                        'de Client beschreef',
+                        'de Business Consultant schreef op',
+                        'de Business Analist ontwerpte',
+                        'de Programmeur codeerde',
+                        'de Project Manager communiceerde',
+                        'de Testers documenterden',
+                        'Beheer installeerde',
+                        'de Client kreeg een rekening voor',
+                        'de Helpdesk ondersteund',
+                        'de Client had nodig']
+                }
+                let titles = language[urlParamater('lang') || navigator.language.split("-")[0]] || language["en"];
+                this.append(...titles.map((title, index) =>
+                    createElement('project-img', { src: `p${index + 1}.png`, innerHTML: title })));
+            }
+        });
+
+        customElements.define('project-img', class extends HTMLElement {
+            connectedCallback() {
+                this.append(
+                    createElement('img', { ...this }),
+                    createElement('div', { innerHTML: this.innerHTML })
+                );
+            }
+        })
+    </script>
+</body>
+
+</html>
