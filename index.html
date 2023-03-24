@@ -14,7 +14,7 @@
             height: 100%;
             background: oldlace;
             font-family: Arial;
-            font-size: calc(16px + (20 - 16) * ((100vw - 320px) / (1440 - 320)));
+            font-size: calc(16px + (19 - 16) * ((100vw - 320px) / (1440 - 320)));
         }
 
         project-plan1 {
@@ -103,31 +103,31 @@
             connectedCallback() {
                 let language = {
                     en: [
-                        'the client described',
-                        'the Business Consultant heard',
-                        'the Business Analysist designed',
-                        'the Programmer programmed',
+                        'the client_described',
+                        'the Consultant_heard',
+                        'the Analysist_designed',
+                        'the Programmer_programmed',
                         'the Project Manager communicated',
-                        'the Testers documented',
-                        'Operations installed',
-                        'the Customer was billed',
-                        'the Helpdesk supports',
-                        'the Customer really needed'],
+                        'the Testers_documented',
+                        'DEVOPS_installed',
+                        'the Customer_was billed for',
+                        'the Helpdesk_supports',
+                        'the Customer_really needed'],
                     nl: [
-                        'de Client beschreef',
-                        'de Business Consultant schreef op',
-                        'de Business Analist ontwerpte',
-                        'de Programmeur codeerde',
-                        'de Project Manager communiceerde',
+                        'de Client_beschreef',
+                        'de Consultant_schreef op',
+                        'de Analist_ontwerpte',
+                        'de Programmeur_codeerde',
+                        'de Project Manager_communiceerde',
                         'de Testers documenteerden',
-                        'ICT Beheer installeerde',
-                        'de Client kreeg een rekening voor',
+                        'ICT Beheer_installeerde',
+                        'de Client kreeg_een rekening voor',
                         'de Helpdesk ondersteund',
-                        'de Client had nodig']
+                        'de Client_had nodig']
                 }
                 let titles = language[urlParamater('lang') || navigator.language.split("-")[0]] || language["en"];
                 this.append(...titles.map((title, index) =>
-                    createElement('project-img', { src: `p${index + 1}.png`, innerHTML: title })));
+                    createElement('project-img', { src: `p${index + 1}.png`, innerHTML: title.replaceAll("_","<br>") })));
             }
         });
 
