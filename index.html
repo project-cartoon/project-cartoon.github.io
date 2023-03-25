@@ -7,6 +7,8 @@
     <title>Projects</title>
     <style>
         body {
+            --title-background-color: #316300;
+            --title-color: beige;
             --gap: 10px;
             margin: 0;
             padding: 0;
@@ -14,7 +16,7 @@
             height: 100%;
             background: oldlace;
             font-family: Arial;
-            font-size: calc(16px + (19 - 16) * ((100vw - 320px) / (1440 - 320)));
+            font-size: calc(16px + (22 - 16) * ((100vw - 320px) / (1440 - 320)));
         }
 
         project-cartoon {
@@ -34,10 +36,10 @@
             box-sizing: border-box;
             overflow: hidden;
             position: relative;
-            border-radius: calc(2 * var(--gap));
+            border-radius: calc(1.5 * var(--gap));
             height: 48vh;
-            box-shadow: 2px 2px 2px 0px rgba(0, 0, 0, 0.5);
-            order: 1px solid rgba(10, 10, 10, 0.5);
+            box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(10, 10, 10, 0.5);
 
             animation: moveToFlexLocation 1s forwards;
             transform: translateX(-100%);
@@ -68,7 +70,7 @@
             }
         }
 
-        @media (max-width: 800px) {
+        @media (max-width: 700px) {
             project-img {
                 flex-basis: 48%;
             }
@@ -77,10 +79,16 @@
         @media (max-width: 400px) {
             project-img {
                 flex-basis: 98%;
+                height: 60vh;
+            }
+
+            project-img img {
+                top: 0 !important;
+                height: 100% !important;
             }
         }
 
-        img {
+        project-img img {
             position: absolute;
             top: 10%;
             right: 0;
@@ -97,8 +105,9 @@
             width: 100%;
             min-height: 2.5em;
             padding: .1em .3em;
-            background: green;
-            color: white;
+            background: var(--title-background-color);
+            color: var(--title-color);
+            text-shadow: 1px 1px 1px black;
             opacity: 1;
             box-sizing: border-box;
             text-align: center;
@@ -133,10 +142,10 @@
                     nl: [
                         "de Klant_beschreef",
                         "de Consultant_schreef op",
-                        "de Analist_ontwerpte",
+                        "de Analist_ontwierp",
                         "de Programmeur_codeerde",
                         "de Project Manager_communiceerde",
-                        "de Testers documenteerden",
+                        "de Testers_hebben getest",
                         "ICT Beheer_installeerde",
                         "de Klant kreeg_een rekening voor",
                         "de Helpdesk ondersteund",
@@ -146,10 +155,12 @@
                 this.append(...titles.map((title, index) =>
                     createElement({
                         tag: "project-img",
-                        src: `p${index + 1}.png`,
-                        innerHTML: title.replaceAll("_", "<br>"),
+                        key: "p" + (++index),
+                        src: `p${index}.png`,
+                        title : title.replaceAll("_", "<br>"),
+                        innerHTML: (localStorage.getItem("p" + index) || title.replaceAll("_", "<br>")),
                         styles: {
-                            "animation-delay": `${index * 0.1}s`
+                            //"animation-delay": `${index * 0.1}s`
                         }
                     })));
             }
@@ -159,7 +170,20 @@
             connectedCallback() {
                 this.append(
                     createElement({ tag: "img", ...this }),
-                    createElement({ tag: "div", innerHTML: this.innerHTML })
+                    createElement({
+                        tag: "div", innerHTML: this.innerHTML,
+                        contentEditable: true,
+                        onkeyup: e => {
+                            let key = e.target.parentNode.key;
+                            localStorage.setItem(key, e.target.innerHTML);
+                        },
+                        onclick: e => {
+                            if (e.ctrlKey) {
+                                localStorage.removeItem(e.target.parentNode.key);
+                                e.target.innerHTML = e.target.parentNode.title;
+                            }
+                        }
+                    })
                 );
             }
         })
