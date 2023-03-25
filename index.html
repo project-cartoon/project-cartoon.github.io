@@ -37,7 +37,7 @@
             overflow: hidden;
             position: relative;
             border-radius: calc(1.5 * var(--gap));
-            height: 48vh;
+            height: 47vh;
             box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(10, 10, 10, 0.5);
 
@@ -111,18 +111,33 @@
             opacity: 1;
             box-sizing: border-box;
             text-align: center;
-            border-bottom:1px solid black;
+            border-bottom: 1px solid black;
+        }
+
+        p {
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            font-size: 11px;
         }
     </style>
 </head>
 
 <body>
-    <project-cartoon>
-    </project-cartoon>
+    <project-cartoon></project-cartoon>
+    <p>
+        Images: <a href="https://projectcartoon.com">Justin Hourigan</a> -
+        Tree Swing history : <a
+            href="https://www.businessballs.com/amusement-stress-relief/tree-swing-cartoon-pictures-early-versions/">versions
+            from the 1970s</a>
+    </p>
     <script>
         let urlParamater = name => new URLSearchParams(window.location.search).get(name);
         let createElement = ({ tag, ...props }) => {
             let el = Object.assign(document.createElement(tag), props);
+            let [scope, name = scope && scope.key] = (props.attach || []);
+            if(scope) console.error(name);
+            if (scope && name) scope[name] = el;
             Object.entries(props.styles || {}).forEach(([key, value]) => el.style[key] = value);
             return el;
         }
@@ -153,17 +168,19 @@
                         "de Klant_had nodig"]
                 }
                 let titles = language[urlParamater("lang") || navigator.language.split("-")[0]] || language["en"];
-                this.append(...titles.map((title, index) =>
-                    createElement({
+                this.append(...titles.map((title, index) => {
+                    let key = "p" + (++index);
+                    return createElement({
                         tag: "project-img",
-                        key: "p" + (++index),
+                        key,
                         src: `p${index}.png`,
-                        title : title.replaceAll("_", "<br>"),
-                        innerHTML: (localStorage.getItem("p" + index) || title.replaceAll("_", "<br>")),
+                        title: title.replaceAll("_", "<br>"),
+                        innerHTML: (localStorage.getItem(key) || title.replaceAll("_", "<br>")),
                         styles: {
-                            //"animation-delay": `${index * 0.1}s`
+                            "animation-delay": `${index * 0.1}s`
                         }
-                    })));
+                    })
+                }));
             }
         });
 
@@ -172,13 +189,16 @@
                 this.append(
                     createElement({ tag: "img", ...this }),
                     createElement({
-                        tag: "div", innerHTML: this.innerHTML,
+                        attach: [this],
+                        tag: "div",
+                        innerHTML: this.innerHTML,
                         contentEditable: true,
                         onkeyup: e => {
                             let key = e.target.parentNode.key;
                             localStorage.setItem(key, e.target.innerHTML);
                         },
                         onclick: e => {
+                            console.warn(this[this.key]);
                             if (e.ctrlKey) {
                                 localStorage.removeItem(e.target.parentNode.key);
                                 e.target.innerHTML = e.target.parentNode.title;
