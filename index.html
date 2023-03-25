@@ -7,7 +7,7 @@
     <title>Projects</title>
     <style>
         body {
-            --gap: 5px;
+            --gap: 10px;
             margin: 0;
             padding: 0;
             width: 100%;
@@ -17,7 +17,7 @@
             font-size: calc(16px + (19 - 16) * ((100vw - 320px) / (1440 - 320)));
         }
 
-        project-plan {
+        project-cartoon {
             max-width: 1200px;
             margin: 0 auto;
             padding: var(--gap);
@@ -37,8 +37,23 @@
             border-radius: calc(2 * var(--gap));
             height: 48vh;
             box-shadow: 2px 2px 2px 0px rgba(0, 0, 0, 0.5);
-            order:1px solid  rgba(10, 10, 10, 0.5);
-            
+            order: 1px solid rgba(10, 10, 10, 0.5);
+
+            animation: moveToFlexLocation 1s forwards;
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
+        @keyframes moveToFlexLocation {
+            0% {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+
+            100% {
+                transform: translateY(0%) translateX(0%);
+                opacity: 1;
+            }
         }
 
         @media (max-width: 1200px) {
@@ -92,48 +107,59 @@
 </head>
 
 <body>
-    <project-plan>
-    </project-plan>
+    <project-cartoon>
+    </project-cartoon>
     <script>
         let urlParamater = name => new URLSearchParams(window.location.search).get(name);
-        let createElement = (tag, ...props) => Object.assign(document.createElement(tag), ...props);
-        customElements.define('project-plan', class extends HTMLElement {
+        let createElement = ({ tag, ...props }) => {
+            let el = Object.assign(document.createElement(tag), props);
+            Object.entries(props.styles || {}).forEach(([key, value]) => el.style[key] = value);
+            return el;
+        }
+        customElements.define("project-cartoon", class extends HTMLElement {
             connectedCallback() {
                 let language = {
                     en: [
-                        'the Customer_described',
-                        'the Consultant_heard',
-                        'the Analysist_designed',
-                        'the Programmer_programmed',
-                        'the Project Manager communicated',
-                        'the Testers_documented',
-                        'DEVOPS_installed',
-                        'the Customer_was billed for',
-                        'the Helpdesk_supports',
-                        'the Customer_really needed'],
+                        "the Customer_described",
+                        "the Consultant_heard",
+                        "the Analysist_designed",
+                        "the Programmer_programmed",
+                        "the Project Manager communicated",
+                        "the Testers_documented",
+                        "DEVOPS_installed",
+                        "the Customer_was billed for",
+                        "the Helpdesk_supports",
+                        "the Customer_really needed"],
                     nl: [
-                        'de Klant_beschreef',
-                        'de Consultant_schreef op',
-                        'de Analist_ontwerpte',
-                        'de Programmeur_codeerde',
-                        'de Project Manager_communiceerde',
-                        'de Testers documenteerden',
-                        'ICT Beheer_installeerde',
-                        'de Klant kreeg_een rekening voor',
-                        'de Helpdesk ondersteund',
-                        'de Klant_had nodig']
+                        "de Klant_beschreef",
+                        "de Consultant_schreef op",
+                        "de Analist_ontwerpte",
+                        "de Programmeur_codeerde",
+                        "de Project Manager_communiceerde",
+                        "de Testers documenteerden",
+                        "ICT Beheer_installeerde",
+                        "de Klant kreeg_een rekening voor",
+                        "de Helpdesk ondersteund",
+                        "de Klant_had nodig"]
                 }
-                let titles = language[urlParamater('lang') || navigator.language.split("-")[0]] || language["en"];
+                let titles = language[urlParamater("lang") || navigator.language.split("-")[0]] || language["en"];
                 this.append(...titles.map((title, index) =>
-                    createElement('project-img', { src: `p${index + 1}.png`, innerHTML: title.replaceAll("_","<br>") })));
+                    createElement({
+                        tag: "project-img",
+                        src: `p${index + 1}.png`,
+                        innerHTML: title.replaceAll("_", "<br>"),
+                        styles: {
+                            "animation-delay": `${index * 0.1}s`
+                        }
+                    })));
             }
         });
 
-        customElements.define('project-img', class extends HTMLElement {
+        customElements.define("project-img", class extends HTMLElement {
             connectedCallback() {
                 this.append(
-                    createElement('img', { ...this }),
-                    createElement('div', { innerHTML: this.innerHTML })
+                    createElement({ tag: "img", ...this }),
+                    createElement({ tag: "div", innerHTML: this.innerHTML })
                 );
             }
         })
