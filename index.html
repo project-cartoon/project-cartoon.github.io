@@ -36,6 +36,9 @@
             position: relative;
             border-radius: calc(2 * var(--gap));
             height: 48vh;
+            box-shadow: 2px 2px 2px 0px rgba(0, 0, 0, 0.5);
+            order:1px solid  rgba(10, 10, 10, 0.5);
+            
         }
 
         @media (max-width: 1200px) {
@@ -98,7 +101,7 @@
             connectedCallback() {
                 let language = {
                     en: [
-                        'the client_described',
+                        'the Customer_described',
                         'the Consultant_heard',
                         'the Analysist_designed',
                         'the Programmer_programmed',
@@ -109,16 +112,16 @@
                         'the Helpdesk_supports',
                         'the Customer_really needed'],
                     nl: [
-                        'de Client_beschreef',
+                        'de Klant_beschreef',
                         'de Consultant_schreef op',
                         'de Analist_ontwerpte',
                         'de Programmeur_codeerde',
                         'de Project Manager_communiceerde',
                         'de Testers documenteerden',
                         'ICT Beheer_installeerde',
-                        'de Client kreeg_een rekening voor',
+                        'de Klant kreeg_een rekening voor',
                         'de Helpdesk ondersteund',
-                        'de Client_had nodig']
+                        'de Klant_had nodig']
                 }
                 let titles = language[urlParamater('lang') || navigator.language.split("-")[0]] || language["en"];
                 this.append(...titles.map((title, index) =>
