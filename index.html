@@ -189,13 +189,12 @@
                     }),
                     ...titles.map((title, index) => {
                         let id = "p" + (++index);
-                        title = title.replaceAll("_", "<br>");
                         return createElement({
                             tag: "project-img",
                             id,
                             src: id + ".png",
                             title,
-                            innerHTML: localStorage.getItem(id) || title,
+                            innerHTML: (localStorage.getItem(id) || title).replaceAll("_", "<br>"),
                             styles: {
                                 "animation-delay": `${index * 0.1}s`,
                                 //"order": index * 2
@@ -272,9 +271,23 @@
                         tag: "div",
                         innerHTML: this.innerHTML,
                         contentEditable: true,
+                        onkeydown: evt => {
+                            if (evt.keyCode == 13) {
+                                evt.preventDefault(); // ignore enter
+                                // Insert an _ character at the current caret position.
+                                const selection = window.getSelection();
+                                const range = selection.getRangeAt(0);
+                                const textNode = document.createTextNode('_');
+                                range.insertNode(textNode);
+                                // Move the caret to the position after the inserted _ character.
+                                range.setStartAfter(textNode);
+                                range.setEndAfter(textNode);
+                                selection.removeAllRanges();
+                                selection.addRange(range);
+                            }
+                        },
                         onkeyup: evt => {
-                            if (evt.keyCode == 13) return;
-                            localStorage.setItem(this.id, (this.title = evt.target.innerHTML));
+                            localStorage.setItem(this.id, (evt.target.innerHTML));
                         },
                         onclick: evt => {
                             if (evt.ctrlKey) {
