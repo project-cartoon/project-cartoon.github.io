@@ -9,23 +9,23 @@
         body {
             --title-background-color: #316300;
             --title-color: beige;
-            --gap: 10px;
+            --cartoon-gap: .5vw;
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
             background: oldlace;
             font-family: Arial;
-            font-size: calc(16px + (22 - 16) * ((100vw - 320px) / (1440 - 320)));
+            font-size: calc(16px + (20 - 16) * ((100vw - 320px) / (1440 - 320)));
         }
 
         project-cartoon {
             max-width: 1200px;
             margin: 0 auto;
-            padding: var(--gap);
+            padding: var(--cartoon-gap);
             display: flex;
             flex-wrap: wrap;
-            gap: var(--gap);
+            gap: var(--cartoon-gap);
             width: 100%;
             padding: 10px;
             box-sizing: border-box;
@@ -36,8 +36,8 @@
             box-sizing: border-box;
             overflow: hidden;
             position: relative;
-            border-radius: calc(1.5 * var(--gap));
-            height: 47vh;
+            border-radius: calc(1.5 * var(--cartoon-gap));
+            height: 46vh;
             box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(10, 10, 10, 0.5);
 
@@ -58,25 +58,25 @@
             }
         }
 
-        @media (max-width: 1200px) {
+        @media (max-width: 950px) {
             project-img {
                 flex-basis: 24%;
             }
         }
 
-        @media (max-width: 1000px) {
+        @media (max-width: 650px) {
             project-img {
                 flex-basis: 32%;
             }
         }
 
-        @media (max-width: 700px) {
+        @media (max-width: 600px) {
             project-img {
                 flex-basis: 48%;
             }
         }
 
-        @media (max-width: 400px) {
+        @media (max-width: 350px) {
             project-img {
                 flex-basis: 98%;
                 height: 60vh;
@@ -152,8 +152,8 @@
                         "the Project Manager communicated",
                         "the Testers_documented",
                         "DEVOPS_installed",
-                        "the Customer_was billed for",
                         "the Helpdesk_supports",
+                        "the Customer_was billed for",
                         "the Customer_really needed"],
                     nl: [
                         "de Klant_beschreef",
@@ -163,8 +163,8 @@
                         "de Project Manager_communiceerde",
                         "de Testers_hebben getest",
                         "ICT Beheer_installeerde",
-                        "de Klant kreeg_een rekening voor",
                         "de Helpdesk ondersteund",
+                        "de Klant kreeg_een rekening voor",
                         "de Klant_had nodig"]
                 }
                 let titles = language[urlParamater("lang") || navigator.language.split("-")[0]] || language["en"];
