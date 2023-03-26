@@ -230,14 +230,16 @@
             }
             render() {
                 this.style.display = "inline-block";
-                this.ondragover = e => e.preventDefault();
+                this.ondragover = evt => evt.preventDefault(); //! required
+                this.onanimationend = () => {
+                    this.style.animationDelay = ""; // reset original delay
+                }
                 this.append(
                     createElement({
                         tag: "img",
                         src: this.src,
                         draggable: true,
                         ondragstart: evt => {
-                            this.style.animationDelay = "0s"; // reset original delay
                             evt.dataTransfer.setData("id", evt.target.parentNode.id); // set dragging id
 
                             //! Custom drag drop
@@ -261,10 +263,8 @@
                             let el = document.getElementById(evt.dataTransfer.getData("id"));
                             let projectCartoon = this.closest("project-cartoon");
                             let imgs = [...projectCartoon.children];
-                            if (imgs.indexOf(el) < imgs.indexOf(this))
-                                this.after(el);
-                            else
-                                this.before(el);
+                            if (imgs.indexOf(el) < imgs.indexOf(this)) this.after(el);
+                            else this.before(el);
                             projectCartoon.saveOrder();
                         }
                     }),
@@ -272,13 +272,14 @@
                         tag: "div",
                         innerHTML: this.innerHTML,
                         contentEditable: true,
-                        onkeyup: e => {
-                            localStorage.setItem(this.id, e.target.innerHTML);
+                        onkeyup: evt => {
+                            if (evt.keyCode == 13) return;
+                            localStorage.setItem(this.id, (this.title = evt.target.innerHTML));
                         },
-                        onclick: e => {
-                            if (e.ctrlKey) {
+                        onclick: evt => {
+                            if (evt.ctrlKey) {
                                 localStorage.removeItem(this.id);
-                                e.target.innerHTML = e.target.parentNode.title;
+                                evt.target.innerHTML = evt.target.parentNode.title;
                             }
                         }
                     })
