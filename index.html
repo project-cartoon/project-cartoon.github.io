@@ -136,9 +136,6 @@
         let urlParamater = name => new URLSearchParams(window.location.search).get(name);
         let createElement = ({ tag, ...props }) => {
             let el = Object.assign(document.createElement(tag), props);
-            let [scope, name = scope && scope.key] = (props.attach || []);
-            if(scope) console.error(name);
-            if (scope && name) scope[name] = el;
             Object.entries(props.styles || {}).forEach(([key, value]) => el.style[key] = value);
             return el;
         }
@@ -190,7 +187,6 @@
                 this.append(
                     createElement({ tag: "img", ...this }),
                     createElement({
-                        attach: [this],
                         tag: "div",
                         innerHTML: this.innerHTML,
                         contentEditable: true,
@@ -199,7 +195,6 @@
                             localStorage.setItem(key, e.target.innerHTML);
                         },
                         onclick: e => {
-                            console.warn(this[this.key]);
                             if (e.ctrlKey) {
                                 localStorage.removeItem(e.target.parentNode.key);
                                 e.target.innerHTML = e.target.parentNode.title;
