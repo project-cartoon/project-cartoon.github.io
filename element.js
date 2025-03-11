@@ -8,6 +8,18 @@ const _IMGNAME_ = "p"; //p1.png .. p10.png in local directory
 // **************************************************************************** languages
 const languages = {
     // underscore character "_" will be replaced with a line break "<br>"
+    wc: [
+        "We need a reusable_tree-swing Web Component",
+        "This Web Component will revolutionize the industry!",
+        "We should use a_UI Framework for this",
+        "Nah, it will work fine in Safari…",
+        "We need a component with 500 props and shadow DOM",
+        "And auto-generated JSDoc comments…",
+        "Sorry, that Web Component only works with Svelte",
+        "Why is the component using_React inside shadow DOM?",
+        "lightweight, framework-agnostic with minimal dependencies!!",
+        "AI: You want a basic vanilla JS_Web Component?"
+    ],
     // ------------------------------------------------------------------------ English
     en: [
         "the Customer_described",
@@ -48,7 +60,7 @@ const languages = {
         "de Klant_had nodig"]
 }
 // **************************************************************************** footerText
-const footerText = [
+const footerHTML = [
     `<b>Drag and drop images to reorder`, `edit headers</b>`,
     `Edits are saved in localStorage`,
     `<a href="javascript:document.querySelector('project-cartoon').reset();location.reload()">Reset & Clear LocalStorage</a>`,
@@ -59,65 +71,67 @@ const footerText = [
     `Tree Swing history : <a href="https://www.businessballs.com/amusement-stress-relief/tree-swing-cartoon-pictures-early-versions/">all versions since the 1970s</a>`].join(" - ");
 // **************************************************************************** styles
 const styles = `
-        :host{
-            --title-background-color: #316300;
-            --title-color: beige;
-            --cartoon-gap: .5vw;
-            display:inline-block;
-            width: 100%;
-            height: 88vh;
-        }
-        project-cartoon-images {
-            display:grid;
-            grid: 1fr 1fr/ repeat(5, 1fr);
-            gap: 10px;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            height: 100%;
-        }
-        project-img {
-            box-sizing: border-box;
-            overflow: hidden;
-            position: relative;
-            border-radius: calc(1.5 * var(--cartoon-gap));
-            width: 100%;
-            height: 100%;
-            box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(10, 10, 10, 0.5);
-            cursor: pointer;
-            display: inline-block;
-            opacity: 1;
-        }
-        project-img img {
-            position: absolute;
-            top: 10%;
-            right: 0;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 90%;
-        }
-        project-img editable-header {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            min-height: 2.5em;
-            padding: .1em .3em;
-            background: var(--title-background-color);
-            color: var(--title-color);
-            text-shadow: 1px 1px 1px black;
-            opacity: 1;
-            box-sizing: border-box;
-            text-align: center;
-            border-bottom: 1px solid black;
-        }
-        footer {
-            margin: .5em;
-            text-align: center;
-            font-size: 80%;
-        }`
+    :host{
+        --title-background-color: #316300;
+        --title-color: beige;
+        --cartoon-gap: .5vw;
+        display:inline-block;
+        width: 100%;
+        height: 88vh;
+    }` +
+    `project-cartoon-images {
+        display:grid;
+        grid: 1fr 1fr/ repeat(5, 1fr);
+        gap: var(--cartoon-gap);
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+    }` +
+    `project-img {
+        box-sizing: border-box;
+        overflow: hidden;
+        position: relative;
+        border-radius: calc(1.5 * var(--cartoon-gap));
+        width: 100%;
+        height: 100%;
+        box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(10, 10, 10, 0.5);
+        cursor: pointer;
+        display: inline-block;
+        opacity: 1;
+    }` +
+    `project-img img {
+        position: absolute;
+        top: 2em;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 90%;
+    }` +
+    `project-img editable-header {
+        font-size: 75%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: inline-block;
+        width: 100%;
+        height: 5em;
+        padding: .1em .1em;
+        background: var(--title-background-color);
+        color: var(--title-color);
+        text-shadow: 1px 1px 1px black;
+        opacity: 1;
+        box-sizing: border-box;
+        text-align: center;
+        border-bottom: 1px solid black;
+    }` +
+    `footer {
+        margin: .5em;
+        text-align: center;
+        font-size: 80%;
+    }`
 // **************************************************************************** helper functions
 let urlParamater = name => new URLSearchParams(window.location.search).get(name);
 // ---------------------------------------------------------------------------- createElement
@@ -127,7 +141,7 @@ let createElement = (tag, props = {}) => {
     return el;
 }
 // ---------------------------------------------------------------------------- createSTYLEelement
-let createSTYLEelement = (styles) => createElement("style", { innerHTML: styles });
+let createSTYLEElement = (styles) => createElement("style", { innerHTML: styles });
 
 // **************************************************************************** BaseClass
 class BaseClassHTMLElement extends HTMLElement {
@@ -188,19 +202,19 @@ customElements.define("project-cartoon", class extends BaseClassHTMLElement {
         this
             .attachShadow({ mode: "open" })
             .append(
-                createSTYLEelement(styles),
+                createSTYLEElement(styles),
                 // ------------------------------------------------------------ reference to animation <style>
-                this.animation = createElement("style", {
-                    innerHTML: `project-img {opacity: 0;animation: moveIMG 1s forwards}` +
-                        `@keyframes moveIMG {` +
-                        `0%   {transform: translateX(-200%);opacity: 0}` +
-                        `100% {transform: translateY(0%) translateX(0%);opacity: 1} }`
-                }),
+                this.animation = createSTYLEElement(
+                    `project-img {opacity: 0;animation: moveIMG 1s forwards}` +
+                    `@keyframes moveIMG {` +
+                    `0%   {transform: translateX(-200%);opacity: 0}` +
+                    `100% {transform: translateY(0%) translateX(0%);opacity: 1} }`
+                ),
                 // ------------------------------------------------------------ main container
                 this.container = createElement("project-cartoon-images"),
                 // ------------------------------------------------------------ footer
                 createElement("footer", {
-                    innerHTML: footerText
+                    innerHTML: footerHTML
                 })
 
             );
@@ -213,7 +227,7 @@ customElements.define("project-cartoon", class extends BaseClassHTMLElement {
                     id,
                     src: id + ".png",
                     title,
-                    innerHTML: (localStorage.getItem(id) || title).replaceAll("_", "<br>"),
+                    text: (localStorage.getItem(id) || title).replaceAll("_", "<br>"),
                     styles: {
                         "animation-delay": `${index * 0.1}s`,
                         //"order": index * 2
@@ -276,6 +290,8 @@ customElements.define("editable-header", class extends BaseClassHTMLElement {
     event_onkeydown(evt) {
         if (evt.keyCode == 13) {
             evt.preventDefault(); // ignore enter
+            return;
+            //!! Makes this work with shadowDOM
             // Insert an _ character at the current caret position.
             const selection = window.getSelection();
             const range = selection.getRangeAt(0);
@@ -319,17 +335,17 @@ customElements.define("project-img", class extends BaseClassHTMLElement {
         }
         // -------------------------------------------------------------------- append <img> and <editable-header>
         this.append(
+            createElement("editable-header", {
+                id: this.id,
+                innerHTML: this.text,
+            }),
             this.img = createElement("img", {
                 src: this.src,
                 draggable: true, // dragging <img> not <project-img>
             }),
-            createElement("editable-header", {
-                id: this.id,
-                innerHTML: this.innerHTML,
-            })
         ); // append
         // -------------------------------------------------------------------- attach events
-        this.attachEvents(this.img); // attach all event_ methods
+        this.attachEvents(this.img); // attach all event_ methods to IMG
     } // render
     // ======================================================================== ondragstart
     event_ondragstart(evt) {
