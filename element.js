@@ -111,7 +111,7 @@ const styles = `
         height: 90%;
     }` +
     `project-img editable-header {
-        font-size: 75%;
+        font-size: 70%;
         position: absolute;
         top: 0;
         left: 0;
