@@ -1,0 +1,380 @@
+const log = (a, ...args) => {
+    // return // no log
+    console.log(`%c ${a} `, "background:gold;color:black", ...args);
+}
+
+
+const _IMGNAME_ = "p"; //p1.png .. p10.png in local directory
+
+// **************************************************************************** languages
+const languages = {
+    // underscore character "_" will be replaced with a line break "<br>"
+    // ------------------------------------------------------------------------ English
+    en: [
+        "the Customer_described",
+        "the Consultant_heard",
+        "the Analyst_designed",
+        "the Programmer_programmed",
+        "the Project Manager communicated",
+        "the Testers_documented",
+        "DEVOPS_installed",
+        "the Helpdesk_supports",
+        "the Customer_was billed for",
+        "the Customer_really needed"
+    ],
+    // ------------------------------------------------------------------------ Spanish
+    es: [
+        "el Cliente_describió",
+        "el Consultor_escuchó",
+        "el Analista_diseñó",
+        "el Programador_programó",
+        "el Gerente de Proyecto_comunicó",
+        "los Testers_documentaron",
+        "DEVOPS_instaló",
+        "el Soporte Técnico_apoya",
+        "el Cliente_fue facturado por",
+        "el Cliente_realmente necesitaba"
+    ],
+    // ------------------------------------------------------------------------ Dutch
+    nl: [
+        "de Klant_beschreef",
+        "de Consultant_schreef op",
+        "de Analist_ontwierp",
+        "de Programmeur_codeerde",
+        "de Project Manager_communiceerde",
+        "de Testers_hebben getest",
+        "ICT Beheer_installeerde",
+        "de Helpdesk ondersteund",
+        "de Klant kreeg_een rekening voor",
+        "de Klant_had nodig"]
+}
+// **************************************************************************** footerText
+const footerText = [
+    `<b>Drag and drop images to reorder`, `edit headers</b>`,
+    `Edits are saved in localStorage`,
+    `<a href="javascript:document.querySelector('project-cartoon').reset();location.reload()">Reset & Clear LocalStorage</a><br>` +
+    `<language-links></language-links>`,
+    `Images by: <a href="https://projectcartoon.com">Justin Hourigan</a>`,
+    `Tree Swing history : <a href="https://www.businessballs.com/amusement-stress-relief/tree-swing-cartoon-pictures-early-versions/">all versions since the 1970s</a>`].join(" - ");
+// **************************************************************************** styles
+const styles = `
+        :host{
+            --title-background-color: #316300;
+            --title-color: beige;
+            --cartoon-gap: .5vw;
+            display:inline-block;
+            width: 100%;
+            height: 88vh;
+        }
+        project-cartoon-images {
+            display:grid;
+            grid: 1fr 1fr/ repeat(5, 1fr);
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+        project-img {
+            box-sizing: border-box;
+            overflow: hidden;
+            position: relative;
+            border-radius: calc(1.5 * var(--cartoon-gap));
+            width: 100%;
+            height: 100%;
+            box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(10, 10, 10, 0.5);
+            cursor: pointer;
+            display: inline-block;
+            opacity: 1;
+            animation: moveToFlexLocation 0s forwards;
+        }
+        @keyframes moveToFlexLocation {
+            100% {
+                transform: translateY(0%) translateX(0%);
+            }
+        }
+        project-img img {
+            position: absolute;
+            top: 10%;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 90%;
+        }
+        project-img editable-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            min-height: 2.5em;
+            padding: .1em .3em;
+            background: var(--title-background-color);
+            color: var(--title-color);
+            text-shadow: 1px 1px 1px black;
+            opacity: 1;
+            box-sizing: border-box;
+            text-align: center;
+            border-bottom: 1px solid black;
+        }
+        footer {
+            margin: 1em;
+            text-align: center;
+            font-size: 80%;
+        }`
+// **************************************************************************** helper functions
+let urlParamater = name => new URLSearchParams(window.location.search).get(name);
+// ---------------------------------------------------------------------------- createElement
+let createElement = (tag, props = {}) => {
+    let el = Object.assign(document.createElement(tag), props);
+    Object.entries(props.styles || {}).forEach(([key, value]) => el.style[key] = value);
+    return el;
+}
+// ---------------------------------------------------------------------------- createSTYLEelement
+let createSTYLEelement = (styles) => createElement("style", { innerHTML: styles });
+
+
+// **************************************************************************** <laguage-links>
+customElements.define("language-links", class extends HTMLElement {
+    connectedCallback() {
+        this.append(
+            "translations: ",
+            ...Object.keys(languages).map((lang, index, array) => {
+                // ------------------------------------------------------------ create links
+                let elements = [
+                    createElement("a", {
+                        href: `?lang=${lang}`,
+                        innerHTML: lang.toUpperCase(),
+                        style: { margin: "0 .2em" },
+                        onclick: (evt) => this.event_onclick(evt)
+                    })
+                ];
+                // ------------------------------------------------------------ create dividers
+                if (index < array.length - 1) {
+                    elements.push(document.createTextNode(" - ")); // create dividers inbetween
+                }
+                // ------------------------------------------------------------ return elements
+                return elements;
+            }).flat(),
+        ) // append
+    } // connectedCallback
+    // ======================================================================== onclick
+    event_onclick(evt) {
+        evt.preventDefault();
+        location.search = `?lang=${lang}`;
+    }
+}); // define <language-links>
+
+// **************************************************************************** <project-cartoon>
+customElements.define("project-cartoon", class extends HTMLElement {
+    connectedCallback() {
+        let preferredLanguage = urlParamater("lang") || this.getAttribute("language");
+        let titles = languages[preferredLanguage] || languages.en;
+        // -------------------------------------------------------------------- main HTML
+        this
+            .attachShadow({ mode: "open" })
+            .append(
+                createSTYLEelement(styles),
+                // ------------------------------------------------------------ reference to animation <style>
+                this.animation = createElement("style", {
+                    innerHTML: `project-img {opacity: 0;animation: moveIMG 1s forwards}` +
+                        `@keyframes moveIMG {` +
+                        `0%   {transform: translateX(-200%);opacity: 0}` +
+                        `100% {transform: translateY(0%) translateX(0%);opacity: 1} }`
+                }),
+                // ------------------------------------------------------------ main container
+                this.container = createElement("project-cartoon-images"),
+                // ------------------------------------------------------------ footer
+                createElement("footer", {
+                    innerHTML: footerText
+                })
+
+            );
+        // -------------------------------------------------------------------- append images
+        this.appendImages(
+            titles.map((title, index) => {
+                let id = _IMGNAME_ + (++index); // p1...p10 .png images
+                // ------------------------------------------------------------ return project-img
+                return createElement("project-img", {
+                    id,
+                    src: id + ".png",
+                    title,
+                    innerHTML: (localStorage.getItem(id) || title).replaceAll("_", "<br>"),
+                    styles: {
+                        "animation-delay": `${index * 0.1}s`,
+                        //"order": index * 2
+                    },
+                })
+            }),
+        )
+        // -------------------------------------------------------------------- main JS
+        setTimeout(() => this.animation.remove(), 2000);
+        this.restoreOrder();
+        //! Custom drag drop
+        // this.ondragover = (evt) => {
+        //     let dragging = document.getElementById("DRAGIMAGE");
+        //     dragging.style.top = evt.clientY + "px";
+        //     dragging.style.left = evt.clientX + "px";
+        // }
+    }
+    // ======================================================================== get projectIMGs
+    get projectIMGs() {
+        return [...this.shadowRoot.querySelectorAll("project-img")];
+    }
+    // ======================================================================== appendIMGs
+    appendImages(imgs = []) {
+        this.container.append(...imgs);
+    }
+    // ======================================================================== saveOrder
+    saveOrder(order = this.projectIMGs.map(el => el.id).join(",")) {
+        log("saveOrder", order);
+        localStorage.setItem(this.nodeName, order);
+    }
+    // ======================================================================== restoreOrder
+    restoreOrder(order = localStorage.getItem(this.nodeName)) {
+        log("restoreOrder", order);
+        if (order)
+            this.appendImages(
+                order
+                    .split(",")
+                    .map(id => this.shadowRoot.getElementById(id))
+            )
+    }
+    // ======================================================================== reset
+    reset() {
+        localStorage.clear();
+    }
+});
+
+// **************************************************************************** <editable-header>
+customElements.define("editable-header", class extends HTMLElement {
+    // ======================================================================== connectedCallback
+    connectedCallback() {
+        Object.assign(this, {
+            // ---------------------------------------------------------------- contentEditable
+            contentEditable: true,
+            // ---------------------------------------------------------------- onkeydown event
+            onkeydown: evt => this.event_onkeydown(evt),
+            // ---------------------------------------------------------------- onkeyup event
+            onkeyup: evt => this.event_onkeyup(evt),
+            // ---------------------------------------------------------------- onclick event
+            onclick: evt => this.event_onclick(evt),
+        }); // Object.assign
+    } // connectedCallback
+    // ======================================================================== onkeydown
+    event_onkeydown(evt) {
+        if (evt.keyCode == 13) {
+            evt.preventDefault(); // ignore enter
+            // Insert an _ character at the current caret position.
+            const selection = window.getSelection();
+            const range = selection.getRangeAt(0);
+            const textNode = document.createTextNode('_');
+            range.insertNode(textNode);
+            // Move the caret to the position after the inserted _ character.
+            range.setStartAfter(textNode);
+            range.setEndAfter(textNode);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    }
+    // ======================================================================== onkeyup
+    event_onkeyup(evt) {
+        localStorage.setItem(this.id, (evt.target.innerHTML));
+    }
+    // ======================================================================== onclick 
+    event_onclick(evt) {
+        console.log(21, evt.ctrlKey);
+        if (evt.ctrlKey) {
+            localStorage.removeItem(this.id);
+            evt.target.innerHTML = evt.target.parentNode.title;
+        }
+    }
+
+}); // define <editable-header>
+
+// **************************************************************************** <project-img>
+customElements.define("project-img", class extends HTMLElement {
+    // ======================================================================== connectedCallback
+    connectedCallback() {
+        log("<project-img>", this.id)
+        this.render(); // render once
+    }
+    // ======================================================================== render
+    render() {
+        // -------------------------------------------------------------------- 
+        this.render = () => { }; // render once, drag-drop makes connectedCallback run again
+        this.ondragover = evt => evt.preventDefault(); //! required
+        this.onanimationend = () => {
+            this.style.animationDelay = ""; // reset original delay
+        }
+        // -------------------------------------------------------------------- append <img> and <editable-header>
+        this.append(
+            this.img = createElement("img", {
+                src: this.src,
+                draggable: true, // dragging <img> not <project-img>
+                // ondragstart: evt => this.handleEvent(evt),
+                // ondragend: evt => this.handleEvent(evt),
+                // ondrop: evt => this.handleEvent(evt),
+                handleEvent: evt => this.handleEvent(evt),
+            }),
+            createElement("editable-header", {
+                id: this.id,
+                innerHTML: this.innerHTML,
+            })
+        ); // append
+        // -------------------------------------------------------------------- attach events
+        this.attachEvents(this.img);
+    } // render
+    // ======================================================================== attachEvents
+    attachEvents(root = this) {
+        Object.getOwnPropertyNames(Object.getPrototypeOf(this))
+            .filter(method => method.startsWith('event_'))
+            .forEach(method => {
+                let eventType = method.split('_').pop();
+                // root.addEventListener(eventType, this);
+                root[eventType] = (evt) => this.handleEvent(evt)
+                // console.warn(root.nodeName, eventType);
+            });
+    }
+    // ======================================================================== handleEvent
+    handleEvent(evt) {
+        log("handleEvent: " + evt.type);
+        if (this["event_on" + evt.type]) {
+            this["event_on" + evt.type](evt);
+        }
+    }
+    // ======================================================================== ondragstart
+    event_ondragstart(evt) {
+        let draggingID = this.id; //evt.target.parentNode.id
+        evt.dataTransfer.setData("id", draggingID);
+        //! Custom drag drop
+        // const dragImage = this.cloneNode(true);
+        // dragImage.style.position = 'absolute';
+        // dragImage.style.left = '-9999px';
+        // dragImage.style.width = this.style.width;
+        // dragImage.id = "DRAGIMAGE";
+        // dragImage.style.top = '-9999px';
+        // document.body.append(dragImage);
+        // evt.dataTransfer.setDragImage(dragImage, evt.clientX, evt.clientY);
+    }
+    // ======================================================================== ondragend
+    event_ondragend(evt) {
+        //! Custom drag drop
+        // document.getElementById("DRAGIMAGE")?.remove();
+    }
+    // ======================================================================== ondrop
+    event_ondrop(evt) {
+        let projectCartoonImages = this.closest("project-cartoon-images");
+        let id = evt.dataTransfer.getData("id"); // p1 ... p10
+        let draggedElement = projectCartoonImages.querySelector("#" + id); // <project-img> dragged
+        log("switch ", draggedElement.id, this.id);
+        let imgs = [...projectCartoonImages.children];
+        // -------------------------------------------------------------------- insert draggedElement before/after this
+        if (imgs.indexOf(draggedElement) < imgs.indexOf(this)) this.after(draggedElement);
+        else this.before(draggedElement);
+        // -------------------------------------------------------------------- save order
+        this.getRootNode().host.saveOrder();
+    }
+
+}) // define <project-img> 
