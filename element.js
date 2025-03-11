@@ -3,7 +3,6 @@ const log = (a, ...args) => {
     console.log(`%c ${a} `, "background:gold;color:black", ...args);
 }
 
-
 const _IMGNAME_ = "p"; //p1.png .. p10.png in local directory
 
 // **************************************************************************** languages
@@ -52,7 +51,9 @@ const languages = {
 const footerText = [
     `<b>Drag and drop images to reorder`, `edit headers</b>`,
     `Edits are saved in localStorage`,
-    `<a href="javascript:document.querySelector('project-cartoon').reset();location.reload()">Reset & Clear LocalStorage</a><br>` +
+    `<a href="javascript:document.querySelector('project-cartoon').reset();location.reload()">Reset & Clear LocalStorage</a>`,
+    `<a href="https://github.com/project-cartoon/project-cartoon.github.io">GitHub source</a>` +
+    `<br>` +
     `<language-links></language-links>`,
     `Images by: <a href="https://projectcartoon.com">Justin Hourigan</a>`,
     `Tree Swing history : <a href="https://www.businessballs.com/amusement-stress-relief/tree-swing-cartoon-pictures-early-versions/">all versions since the 1970s</a>`].join(" - ");
@@ -87,12 +88,6 @@ const styles = `
             cursor: pointer;
             display: inline-block;
             opacity: 1;
-            animation: moveToFlexLocation 0s forwards;
-        }
-        @keyframes moveToFlexLocation {
-            100% {
-                transform: translateY(0%) translateX(0%);
-            }
         }
         project-img img {
             position: absolute;
@@ -119,7 +114,7 @@ const styles = `
             border-bottom: 1px solid black;
         }
         footer {
-            margin: 1em;
+            margin: .5em;
             text-align: center;
             font-size: 80%;
         }`
@@ -134,10 +129,30 @@ let createElement = (tag, props = {}) => {
 // ---------------------------------------------------------------------------- createSTYLEelement
 let createSTYLEelement = (styles) => createElement("style", { innerHTML: styles });
 
+// **************************************************************************** BaseClass
+class BaseClassHTMLElement extends HTMLElement {
+    // ======================================================================== connectedCallback
+    connectedCallback() {
+        this.$connected && this.$connected();
+    }
+    // ======================================================================== attachEvents
+    // process all methods starting with "event_" and attach them to the root element
+    attachEvents(root = this) {
+        Object.getOwnPropertyNames(Object.getPrototypeOf(this))
+            .filter(method => method.startsWith('event_'))
+            .forEach(method => {
+                let eventType = method.split('_').pop();
+                root[eventType] = (evt) => {
+                    log("event_" + eventType);
+                    this[method](evt)
+                }
+            });
+    }
+} // BaseClassHTMLElement
 
 // **************************************************************************** <laguage-links>
-customElements.define("language-links", class extends HTMLElement {
-    connectedCallback() {
+customElements.define("language-links", class extends BaseClassHTMLElement {
+    $connected() {
         this.append(
             "translations: ",
             ...Object.keys(languages).map((lang, index, array) => {
@@ -147,7 +162,10 @@ customElements.define("language-links", class extends HTMLElement {
                         href: `?lang=${lang}`,
                         innerHTML: lang.toUpperCase(),
                         style: { margin: "0 .2em" },
-                        onclick: (evt) => this.event_onclick(evt)
+                        onclick: (evt) => {
+                            evt.preventDefault();
+                            location.search = `?lang=${lang}`;
+                        }
                     })
                 ];
                 // ------------------------------------------------------------ create dividers
@@ -159,16 +177,11 @@ customElements.define("language-links", class extends HTMLElement {
             }).flat(),
         ) // append
     } // connectedCallback
-    // ======================================================================== onclick
-    event_onclick(evt) {
-        evt.preventDefault();
-        location.search = `?lang=${lang}`;
-    }
 }); // define <language-links>
 
 // **************************************************************************** <project-cartoon>
-customElements.define("project-cartoon", class extends HTMLElement {
-    connectedCallback() {
+customElements.define("project-cartoon", class extends BaseClassHTMLElement {
+    $connected() {
         let preferredLanguage = urlParamater("lang") || this.getAttribute("language");
         let titles = languages[preferredLanguage] || languages.en;
         // -------------------------------------------------------------------- main HTML
@@ -222,24 +235,29 @@ customElements.define("project-cartoon", class extends HTMLElement {
     get projectIMGs() {
         return [...this.shadowRoot.querySelectorAll("project-img")];
     }
+    get order() {
+        return this.projectIMGs.map(el => el.id).join(",");
+    }
+    set order(order) {
+        this.appendImages(
+            order
+                .split(",")
+                .map(id => this.shadowRoot.getElementById(id))
+        )
+    }
     // ======================================================================== appendIMGs
     appendImages(imgs = []) {
         this.container.append(...imgs);
     }
     // ======================================================================== saveOrder
-    saveOrder(order = this.projectIMGs.map(el => el.id).join(",")) {
+    saveOrder(order = this.order) {
         log("saveOrder", order);
         localStorage.setItem(this.nodeName, order);
     }
     // ======================================================================== restoreOrder
     restoreOrder(order = localStorage.getItem(this.nodeName)) {
         log("restoreOrder", order);
-        if (order)
-            this.appendImages(
-                order
-                    .split(",")
-                    .map(id => this.shadowRoot.getElementById(id))
-            )
+        if (order) this.order = order;
     }
     // ======================================================================== reset
     reset() {
@@ -248,19 +266,11 @@ customElements.define("project-cartoon", class extends HTMLElement {
 });
 
 // **************************************************************************** <editable-header>
-customElements.define("editable-header", class extends HTMLElement {
+customElements.define("editable-header", class extends BaseClassHTMLElement {
     // ======================================================================== connectedCallback
-    connectedCallback() {
-        Object.assign(this, {
-            // ---------------------------------------------------------------- contentEditable
-            contentEditable: true,
-            // ---------------------------------------------------------------- onkeydown event
-            onkeydown: evt => this.event_onkeydown(evt),
-            // ---------------------------------------------------------------- onkeyup event
-            onkeyup: evt => this.event_onkeyup(evt),
-            // ---------------------------------------------------------------- onclick event
-            onclick: evt => this.event_onclick(evt),
-        }); // Object.assign
+    $connected() {
+        this.contentEditable = true;
+        this.attachEvents();
     } // connectedCallback
     // ======================================================================== onkeydown
     event_onkeydown(evt) {
@@ -284,7 +294,6 @@ customElements.define("editable-header", class extends HTMLElement {
     }
     // ======================================================================== onclick 
     event_onclick(evt) {
-        console.log(21, evt.ctrlKey);
         if (evt.ctrlKey) {
             localStorage.removeItem(this.id);
             evt.target.innerHTML = evt.target.parentNode.title;
@@ -294,9 +303,9 @@ customElements.define("editable-header", class extends HTMLElement {
 }); // define <editable-header>
 
 // **************************************************************************** <project-img>
-customElements.define("project-img", class extends HTMLElement {
+customElements.define("project-img", class extends BaseClassHTMLElement {
     // ======================================================================== connectedCallback
-    connectedCallback() {
+    $connected() {
         log("<project-img>", this.id)
         this.render(); // render once
     }
@@ -313,10 +322,6 @@ customElements.define("project-img", class extends HTMLElement {
             this.img = createElement("img", {
                 src: this.src,
                 draggable: true, // dragging <img> not <project-img>
-                // ondragstart: evt => this.handleEvent(evt),
-                // ondragend: evt => this.handleEvent(evt),
-                // ondrop: evt => this.handleEvent(evt),
-                handleEvent: evt => this.handleEvent(evt),
             }),
             createElement("editable-header", {
                 id: this.id,
@@ -324,26 +329,8 @@ customElements.define("project-img", class extends HTMLElement {
             })
         ); // append
         // -------------------------------------------------------------------- attach events
-        this.attachEvents(this.img);
+        this.attachEvents(this.img); // attach all event_ methods
     } // render
-    // ======================================================================== attachEvents
-    attachEvents(root = this) {
-        Object.getOwnPropertyNames(Object.getPrototypeOf(this))
-            .filter(method => method.startsWith('event_'))
-            .forEach(method => {
-                let eventType = method.split('_').pop();
-                // root.addEventListener(eventType, this);
-                root[eventType] = (evt) => this.handleEvent(evt)
-                // console.warn(root.nodeName, eventType);
-            });
-    }
-    // ======================================================================== handleEvent
-    handleEvent(evt) {
-        log("handleEvent: " + evt.type);
-        if (this["event_on" + evt.type]) {
-            this["event_on" + evt.type](evt);
-        }
-    }
     // ======================================================================== ondragstart
     event_ondragstart(evt) {
         let draggingID = this.id; //evt.target.parentNode.id
@@ -359,10 +346,10 @@ customElements.define("project-img", class extends HTMLElement {
         // evt.dataTransfer.setDragImage(dragImage, evt.clientX, evt.clientY);
     }
     // ======================================================================== ondragend
-    event_ondragend(evt) {
-        //! Custom drag drop
-        // document.getElementById("DRAGIMAGE")?.remove();
-    }
+    // event_ondragend(evt) {
+    //     //! Custom drag drop
+    //     // document.getElementById("DRAGIMAGE")?.remove();
+    // }
     // ======================================================================== ondrop
     event_ondrop(evt) {
         let projectCartoonImages = this.closest("project-cartoon-images");
